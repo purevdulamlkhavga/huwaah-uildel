@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хуваах Үйлдэл - 2-р Анги</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for Game Victory -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #0b132b;
+            color: #f8fafc;
+        }
+
+        .heading-font {
+            font-family: 'Fredoka', cursive, sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b132b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1c2541;
+            border-radius: 4px;
+        }
+
+        .apple-bounce {
+            animation: bounce 0.4s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-6px); }
+        }
+
+        .frog-jump {
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-glow {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.08);
+        }
+
+        .btn-press {
+            transition: transform 0.1s ease, background-color 0.2s;
+        }
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-6">
+
+    <div class="max-w-6xl mx-auto w-full flex-grow flex flex-col gap-5">
+        
+        <!-- HEADER / NAVIGATION TABS -->
+        <header class="bg-[#1c2541]/80 backdrop-blur-md p-2 rounded-2xl border border-[#3a506b]/40 flex flex-wrap gap-2 justify-center sm:justify-start items-center shadow-xl">
+            <button onclick="switchTab('tab1')" id="nav-tab1" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all bg-[#10b981] text-slate-950 shadow-lg shadow-emerald-500/20">
+                <span class="text-lg">🍎</span> Тэнцүү Хуваах
+            </button>
+            <button onclick="switchTab('tab2')" id="nav-tab2" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all text-slate-300 hover:bg-[#3a506b]/40 hover:text-white">
+                <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Хуваах Үйлдлийн Нууц
+            </button>
+            <button onclick="switchTab('tab3')" id="nav-tab3" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all text-slate-300 hover:bg-[#3a506b]/40 hover:text-white">
+                <span>🐸</span> Мэлхийн Үсрэлт
+            </button>
+            <button onclick="switchTab('tab4')" id="nav-tab4" class="tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all text-slate-300 hover:bg-[#3a506b]/40 hover:text-white">
+                <i class="fa-solid fa-gamepad text-purple-400"></i> Хөгжилтэй Тоглоом
+            </button>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-grow">
+
+            <!-- TAB 1: EQUAL SHARING VISUALIZER -->
+            <section id="tab1" class="tab-content flex flex-col gap-5">
+                <!-- Title & Control Bar -->
+                <div class="bg-[#1c2541] border border-[#3a506b]/40 rounded-3xl p-5 sm:p-6 shadow-xl relative overflow-hidden">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase tracking-wider mb-2">
+                                ✋ Үзүүлэн Загвар
+                            </span>
+                            <h1 class="text-2xl sm:text-3xl font-extrabold heading-font text-white tracking-wide">
+                                Алимыг тэнцүү хэсэгт хуваая
+                            </h1>
+                            <p class="text-slate-400 text-sm sm:text-base mt-1">
+                                Нийт алимын тоо болон тавагны тоог өөрчилж, хэрхэн хуваагдаж байгааг ажиглаарай!
+                            </p>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="flex flex-wrap items-center gap-4 bg-[#0b132b]/80 p-3 rounded-2xl border border-[#3a506b]/30 self-start md:self-auto">
+                            <!-- Total Apples Selector -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-slate-400 font-bold uppercase">Нийт алим:</span>
+                                <div class="flex items-center bg-[#1c2541] rounded-xl border border-[#3a506b]/50">
+                                    <button onclick="adjustApples(-1)" class="btn-press px-3 py-1.5 text-emerald-400 text-lg font-bold hover:bg-[#3a506b]/30 rounded-l-xl">-</button>
+                                    <span id="total-apples-display" class="px-3 font-extrabold text-emerald-400 min-w-[32px] text-center">12</span>
+                                    <button onclick="adjustApples(1)" class="btn-press px-3 py-1.5 text-emerald-400 text-lg font-bold hover:bg-[#3a506b]/30 rounded-r-xl">+</button>
+                                </div>
+                            </div>
+
+                            <div class="h-8 w-[1px] bg-[#3a506b]/40 hidden sm:block"></div>
+
+                            <!-- Plates Selector -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-slate-400 font-bold uppercase">Тавагны тоо:</span>
+                                <div class="flex items-center bg-[#1c2541] rounded-xl border border-[#3a506b]/50">
+                                    <button onclick="adjustPlates(-1)" class="btn-press px-3 py-1.5 text-emerald-400 text-lg font-bold hover:bg-[#3a506b]/30 rounded-l-xl">-</button>
+                                    <span id="plates-count-display" class="px-3 font-extrabold text-emerald-400 min-w-[32px] text-center">3</span>
+                                    <button onclick="adjustPlates(1)" class="btn-press px-3 py-1.5 text-emerald-400 text-lg font-bold hover:bg-[#3a506b]/30 rounded-r-xl">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visualization Box -->
+                <div class="bg-[#0b132b] border border-[#3a506b]/40 rounded-3xl p-6 shadow-2xl min-h-[280px] flex flex-col justify-center items-center relative card-glow">
+                    <!-- Dynamic Summary Text -->
+                    <div id="visual-summary-text" class="text-center text-lg sm:text-xl font-bold mb-6 text-slate-200">
+                        <!-- Filled by JS -->
+                    </div>
+
+                    <!-- Plates & Apples Container -->
+                    <div id="plates-container" class="flex flex-wrap justify-center items-center gap-4 sm:gap-6 w-full">
+                        <!-- Plates generated dynamically -->
+                    </div>
+
+                    <!-- Leftover Warning if not divisible -->
+                    <div id="remainder-badge" class="hidden mt-6 px-4 py-2 bg-amber-500/20 border border-amber-500/40 rounded-xl text-amber-300 font-semibold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span id="remainder-text"></span>
+                    </div>
+                </div>
+
+                <!-- Equation Math Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Repeated Subtraction Card -->
+                    <div class="bg-[#1c2541] border border-[#3a506b]/40 rounded-3xl p-5 text-center flex flex-col justify-between shadow-lg">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Давтан Хасах Үйлдэл</span>
+                        <div id="repeated-subtraction-display" class="text-2xl sm:text-3xl font-extrabold text-cyan-400 my-3 heading-font tracking-wider">
+                            <!-- Calculated JS -->
+                        </div>
+                        <p class="text-xs text-slate-400">Тэг (0) болох хүртэл ижил тоог хэдэн удаа хассаныг харуулна.</p>
+                    </div>
+
+                    <!-- Division Equation Card -->
+                    <div class="bg-[#1c2541] border border-[#3a506b]/40 rounded-3xl p-5 text-center flex flex-col justify-between shadow-lg">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Хуваах Үйлдэл</span>
+                        <div id="division-equation-display" class="text-3xl sm:text-4xl font-extrabold text-emerald-400 my-2 heading-font tracking-wider">
+                            <!-- Calculated JS -->
+                        </div>
+                        <p class="text-xs text-slate-400">Нийт алим ÷ Тавагны тоо = Таваг тус бүр дэх алим</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: DIVISION CONCEPT & TERMS -->
+            <section id="tab2" class="tab-content hidden flex-col gap-5">
+                <div class="bg-[#1c2541] border border-[#3a506b]/40 rounded-3xl p-6 shadow-xl">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-lightbulb"></i> Үг хэллэг ба Нэршил
+                    </span>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold heading-font text-white">Хуваах үйлдлийн гишүүд</h2>
+                    <p class="text-slate-400 mt-1">Тоо тус бүр өөрийн гэсэн онцгой нэртэй байдаг. Доорх жишээг даран туршиж үзээрэй!</p>
+                </div>
+
+                <!-- Interactive Term Explainer -->
+                <div class="bg-[#1c2541] border border-[#3a506b]/40 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col items-center">
+                    
+                    <!-- Interactive Equation Display -->
+                    <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-3xl sm:text-5xl font-black heading-font my-6">
+                        <!-- Dividend -->
+                        <div class="flex flex-col items-center group cursor-pointer" onclick="highlightTerm('dividend')">
+                            <span class="px-4 py-2 rounded-2xl bg-pink-500/20 text-pink-400 border-2 border-pink-500/50 shadow-lg shadow-pink-500/10 group-hover:scale-110 transition-transform">
+                                <span id="concept-a">15</span>
+                            </span>
+                            <span class="text-xs font-bold text-pink-400 mt-3 tracking-wider uppercase">Хуваагдагч</span>
+                        </div>
+
+                        <span class="text-slate-400">÷</span>
+
+                        <!-- Divisor -->
+                        <div class="flex flex-col items-center group cursor-pointer" onclick="highlightTerm('divisor')">
+                            <span class="px-4 py-2 rounded-2xl bg-cyan-500/20 text-cyan-400 border-2 border-cyan-500/50 shadow-lg shadow-cyan-500/10 group-hover:scale-110 transition-transform">
+                                <span id="concept-b">3</span>
+                            </span>
+                            <span class="text-xs font-bold text-cyan-400 mt-3 tracking-wider uppercase">Хуваагч</span>
+                        </div>
+
+                        <span class="text-slate-400">=</span>
+
+                        <!-- Quotient -->
+                        <div class="flex flex-col items-center group cursor-pointer" onclick="highlightTerm('quotient')">
+                            <span class="px-4 py-2 rounded-2xl bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/50 shadow-lg shadow-emerald-500/10 group-hover:scale-110 transition-transform">
+                                <span id="concept-c">5</span>
+                            </span>
+                            <span class="text-xs font-bold text-emerald-400 mt-3 tracking-wider uppercase">Ногдвор</span>
+                        </div>
+                    </div>
+
+                    <!-- Selector Buttons for Examples -->
+                    <div class="flex flex-wrap gap-2 justify-center mt-4">
+                        <button onclick="setConcept(10, 2)" class="px-3 py-1.5 bg-[#0b132b] hover:bg-[#3a506b]/40 rounded-xl text-xs font-bold text-slate-300 border border-[#3a506b]/40">10 ÷ 2 = 5</button>
+                        <button onclick="setConcept(12, 4)" class="px-3 py-1.5 bg-[#0b132b] hover:bg-[#3a506b]/40 rounded-xl text-xs font-bold text-slate-300 border border-[#3a506b]/40">12 ÷ 4 = 3</button>
+                        <button onclick="setConcept(15, 3)" class="px-3 py-1.5 bg-[#0b132b] hover:bg-[#3a506b]/40 rounded-xl text-xs font-bold text-slate-300 border border-[#3a506b]/40">15 ÷ 3 = 5</button>
+                        <button onclick="setConcept(20, 5)" class="px-3 py-1.5 bg-[#0b132b] hover:bg-[#3a506b]/40 rounded-xl text-xs font-bold text-slate-300 border border-[#3a506b]/40">20 ÷ 5 = 4</button>
+                    </div>
+
+                    <!-- Explanatory Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mt-8">
+                        <div id="card-dividend" class="p-4 rounded-2xl bg-pink-500/10 border border-pink-500/30">
+                            <div class="flex items-center gap-2 text-pink-400 font-bold mb-1">
+                                <i class="fa-solid fa-basket-shopping"></i>
+                                <span>Хуваагдагч</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Хуваах гэж байгаа нийт зүйлийн хэмжээ буюу анх байсан бөөгнөрөл тоо.
+                            </p>
+                        </div>
+
+                        <div id="card-divisor" class="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30">
+                            <div class="flex items-center gap-2 text-cyan-400 font-bold mb-1">
+                                <i class="fa-solid fa-users-viewfinder"></i>
+                                <span>Хуваагч</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Хэдэн тэнцүү хэсэгт (хэдэн хүнд эсвэл тавагт) хуваах гэж буй тоо.
+                            </p>
+                        </div>
+
+                        <div id="card-quotient" class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
+                            <div class="flex items-center gap-2 text-emerald-400 font-bold mb-1">
+                                <i class="fa-solid fa-square-check"></i>
+                                <span>Ногдвор</span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Хуваасны дараа нэг хэсэгт эсвэл нэг хүнд хэд ногдож байгаа хариу тоо.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: FROG JUMP NUMBER LINE -->
+            <section id="tab3" class="tab-content hidden flex-col gap-5">
+                <div class="bg-[#1c2541] border border-[#3a506b]/40 rounded-3xl p-6 shadow-xl">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30 uppercase tracking-wider mb-2">
+                                🐸 Тоон шугам
+                            </span>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold heading-font text-white">Мэлхийн ухрах үсрэлт</h2>
+                            <p class="text-slate-400 mt-1">Хуваах үйлдэл нь тоон шугам дээр ухраж үсрэхтэй ижилхэн!</p>
+                        </div>
+
+                        <!-- Frog Controls -->
+                        <div class="flex items-center gap-3 bg-[#0b132b] p-3 rounded-2xl border border-[#3a506b]/30">
+                            <span class="text-xs text-slate-400 font-bold">Үйлдлүүд:</span>
+                            <button onclick="setupFrog(12, 3)" class="px-3 py-1 bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 text-xs font-bold rounded-lg border border-purple-500/30">12 ÷ 3</button>
+                            <button onclick="setupFrog(15, 5)" class="px-3 py-1 bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 text-xs font-bold rounded-lg border border-purple-500/30">15 ÷ 5</button>
+                            <button onclick="setupFrog(10, 2)" class="px-3 py-1 bg-purple-600/30 hover:bg-purple-600/50 text-purple-300 text-xs font-bold rounded-lg border border-purple-500/30">10 ÷ 2</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Number Line Canvas/Visual -->
+                <div class="bg-[#1c2541] border border-[#3a506b]/40 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col items-center overflow-x-auto">
+                    
+                    <div class="text-xl font-bold text-purple-300 mb-6 heading-font flex items-center gap-3">
+                        <span id="frog-equation-text">12 ÷ 3 = ?</span>
+                        <span class="text-xs bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30 text-purple-300">
+                            Үсрэлтийн тоо: <strong id="frog-jump-count" class="text-white">0</strong>
+                        </span>
+                    </div>
+
+                    <!-- Number Line Container -->
+                    <div class="w-full min-w-[600px] relative py-12 px-8">
+                        <!-- Line -->
+                        <div class="h-2 bg-slate-700 w-full rounded-full relative">
+                            <!-- Marks -->
+                            <div id="number-line-marks" class="flex justify-between w-full absolute -top-2 left-0 right-0">
+                                <!-- Marks generated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Frog Character -->
+                        <div id="frog-character" class="absolute top-0 text-4xl frog-jump transform -translate-x-1/2 -translate-y-4" style="left: 0%;">
+                            🐸
+                        </div>
+                    </div>
+
+                    <!-- Action Controls -->
+                    <div class="flex gap-4 mt-8">
+                        <button onclick="startFrogJump()" id="frog-start-btn" class="btn-press px-6 py-3 bg-purple-500 hover:bg-purple-600 text-slate-950 font-black rounded-2xl shadow-lg shadow-purple-500/25 flex items-center gap-2">
+                            <i class="fa-solid fa-play"></i> Үсрэхийг эхлүүлэх
+                        </button>
+                        <button onclick="resetFrog()" class="btn-press px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-2xl border border-slate-600">
+                            <i class="fa-solid fa-rotate-right"></i> Дахин эхлэх
+                        </button>
+                    </div>
+
+                    <p id="frog-result-msg" class="text-sm font-bold text-emerald-400 mt-6 h-6 text-center">
+                        <!-- Dynamic Result -->
+                    </p>
+                </div>
+            </section>
+
+            <!-- TAB 4: QUIZ GAME -->
+            <section id="tab4" class="tab-content hidden flex-col gap-5">
+                <div class="bg-[#1c2541] border border-[#3a506b]/40 rounded-3xl p-6 shadow-xl flex justify-between items-center">
+                    <div>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 uppercase tracking-wider mb-1">
+                            🎮 Асуулт ба Тоглоом
+                        </span>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold heading-font text-white">Хуваах Үйлдлийн Мэргэжилтэн</h2>
+                    </div>
+
+                    <!-- Score board -->
+                    <div class="flex items-center gap-2 bg-[#0b132b] px-4 py-2 rounded-2xl border border-indigo-500/30">
+                        <i class="fa-solid fa-star text-amber-400 text-xl"></i>
+                        <span class="text-xs text-slate-400 font-bold uppercase">Оноо:</span>
+                        <span id="game-score" class="text-2xl font-black text-amber-400 heading-font">0</span>
+                    </div>
+                </div>
+
+                <!-- Game Container Card -->
+                <div class="bg-[#1c2541] border border-[#3a506b]/40 rounded-3xl p-6 sm:p-10 shadow-2xl flex flex-col items-center justify-center min-h-[360px] relative">
+                    
+                    <!-- Question Box -->
+                    <div id="quiz-box" class="w-full flex flex-col items-center">
+                        <span class="text-slate-400 text-sm font-bold uppercase tracking-widest mb-4">Зөв хариултыг сонгоорой</span>
+                        
+                        <div id="quiz-question" class="text-4xl sm:text-6xl font-black text-white heading-font tracking-wider bg-[#0b132b] px-8 py-6 rounded-3xl border border-[#3a506b]/40 mb-8 shadow-inner">
+                            12 ÷ 2 = ?
+                        </div>
+
+                        <!-- Options Grid -->
+                        <div id="quiz-options" class="grid grid-cols-2 gap-4 w-full max-w-md">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Feedback Message overlay -->
+                    <div id="quiz-feedback" class="hidden flex-col items-center justify-center text-center">
+                        <div id="feedback-icon" class="text-6xl mb-3">🎉</div>
+                        <h3 id="feedback-title" class="text-2xl font-black text-white heading-font">Маш сайн!</h3>
+                        <p id="feedback-desc" class="text-slate-300 text-sm mt-1 mb-6">Та зөв хариуллаа.</p>
+                        <button onclick="nextQuestion()" class="btn-press px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black rounded-2xl shadow-lg shadow-emerald-500/25">
+                            Дараагийн асуулт <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="text-center text-slate-500 text-xs py-2">
+            2-р ангийн Математикийн сургалтад зориулсан интерактив үзүүлэн загвар
+        </footer>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Global State
+        let totalApples = 15;
+        let platesCount = 3;
+
+        let conceptDividend = 15;
+        let conceptDivisor = 3;
+
+        let frogDividend = 12;
+        let frogDivisor = 3;
+        let frogCurrentPos = 12;
+        let frogJumpCount = 0;
+        let frogInterval = null;
+
+        let score = 0;
+        let currentQuestion = {};
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('flex'));
+            
+            const activeTab = document.getElementById(tabId);
+            activeTab.classList.remove('hidden');
+            activeTab.classList.add('flex');
+
+            // Style Active Tab Button
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all text-slate-300 hover:bg-[#3a506b]/40 hover:text-white";
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            activeBtn.className = "tab-btn flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm sm:text-base transition-all bg-[#10b981] text-slate-950 shadow-lg shadow-emerald-500/20";
+
+            if (tabId === 'tab3') {
+                setupFrog(frogDividend, frogDivisor);
+            } else if (tabId === 'tab4' && !currentQuestion.question) {
+                generateQuestion();
+            }
+        }
+
+        // ================= TAB 1: VISUALIZER LOGIC =================
+        function adjustApples(delta) {
+            const newValue = totalApples + delta;
+            if (newValue >= 2 && newValue <= 30) {
+                totalApples = newValue;
+                renderVisualizer();
+            }
+        }
+
+        function adjustPlates(delta) {
+            const newValue = platesCount + delta;
+            if (newValue >= 1 && newValue <= 6) {
+                platesCount = newValue;
+                renderVisualizer();
+            }
+        }
+
+        function renderVisualizer() {
+            // Update Header displays
+            document.getElementById('total-apples-display').innerText = totalApples;
+            document.getElementById('plates-count-display').innerText = platesCount;
+
+            const quotient = Math.floor(totalApples / platesCount);
+            const remainder = totalApples % platesCount;
+
+            // Summary text update
+            const summaryEl = document.getElementById('visual-summary-text');
+            summaryEl.innerHTML = `<span class="text-emerald-400 font-black">${platesCount}</span> таваг тус бүрд <span class="text-amber-400 font-black">${quotient}</span> алим байна:`;
+
+            // Render Plates & Apples
+            const container = document.getElementById('plates-container');
+            container.innerHTML = '';
+
+            for (let i = 0; i < platesCount; i++) {
+                const plate = document.createElement('div');
+                plate.className = "bg-[#1c2541] border-2 border-[#3a506b] rounded-3xl p-4 min-w-[130px] min-h-[120px] flex flex-wrap justify-center items-center gap-2 shadow-inner transition-all transform hover:scale-105";
+
+                for (let j = 0; j < quotient; j++) {
+                    const apple = document.createElement('span');
+                    apple.className = "text-2xl sm:text-3xl apple-bounce inline-block filter drop-shadow";
+                    apple.innerText = '🍎';
+                    apple.style.animationDelay = `${j * 0.1}s`;
+                    plate.appendChild(apple);
+                }
+
+                container.appendChild(plate);
+            }
+
+            // Handle Remainder
+            const remainderBadge = document.getElementById('remainder-badge');
+            if (remainder > 0) {
+                remainderBadge.classList.remove('hidden');
+                document.getElementById('remainder-text').innerText = `${totalApples} алимыг ${platesCount} тавагт хуваахад ${remainder} алим илүү гарна (үлдэгдэл).`;
+            } else {
+                remainderBadge.classList.add('hidden');
+            }
+
+            // Repeated Subtraction Logic
+            const subtractionEl = document.getElementById('repeated-subtraction-display');
+            let subString = `${totalApples}`;
+            let current = totalApples;
+            
+            while (current >= platesCount) {
+                subString += ` - ${platesCount}`;
+                current -= platesCount;
+            }
+            subString += ` = ${current}`;
+            subtractionEl.innerText = subString;
+
+            // Division Equation
+            const divisionEl = document.getElementById('division-equation-display');
+            if (remainder === 0) {
+                divisionEl.innerText = `${totalApples} ÷ ${platesCount} = ${quotient}`;
+            } else {
+                divisionEl.innerText = `${totalApples} ÷ ${platesCount} = ${quotient} (үлдэгдэл ${remainder})`;
+            }
+        }
+
+        // ================= TAB 2: CONCEPT TERMS LOGIC =================
+        function setConcept(a, b) {
+            conceptDividend = a;
+            conceptDivisor = b;
+            document.getElementById('concept-a').innerText = a;
+            document.getElementById('concept-b').innerText = b;
+            document.getElementById('concept-c').innerText = a / b;
+        }
+
+        function highlightTerm(term) {
+            // Reset border highlights
+            ['card-dividend', 'card-divisor', 'card-quotient'].forEach(id => {
+                document.getElementById(id).classList.remove('ring-2', 'ring-white');
+            });
+
+            if (term === 'dividend') {
+                document.getElementById('card-dividend').classList.add('ring-2', 'ring-white');
+            } else if (term === 'divisor') {
+                document.getElementById('card-divisor').classList.add('ring-2', 'ring-white');
+            } else if (term === 'quotient') {
+                document.getElementById('card-quotient').classList.add('ring-2', 'ring-white');
+            }
+        }
+
+        // ================= TAB 3: FROG JUMP LOGIC =================
+        function setupFrog(dividend, divisor) {
+            clearInterval(frogInterval);
+            frogDividend = dividend;
+            frogDivisor = divisor;
+            frogCurrentPos = dividend;
+            frogJumpCount = 0;
+
+            document.getElementById('frog-equation-text').innerText = `${frogDividend} ÷ ${frogDivisor} = ?`;
+            document.getElementById('frog-jump-count').innerText = '0';
+            document.getElementById('frog-result-msg').innerText = '';
+            document.getElementById('frog-start-btn').disabled = false;
+
+            // Generate Number Line Marks
+            const marksContainer = document.getElementById('number-line-marks');
+            marksContainer.innerHTML = '';
+
+            for (let i = 0; i <= frogDividend; i++) {
+                const mark = document.createElement('div');
+                mark.className = "flex flex-col items-center";
+                mark.innerHTML = `
+                    <div class="w-0.5 h-4 bg-slate-500"></div>
+                    <span class="text-xs font-bold text-slate-400 mt-1">${i}</span>
+                `;
+                marksContainer.appendChild(mark);
+            }
+
+            updateFrogPosition();
+        }
+
+        function updateFrogPosition() {
+            const frogEl = document.getElementById('frog-character');
+            const percentage = (frogCurrentPos / frogDividend) * 100;
+            frogEl.style.left = `${percentage}%`;
+        }
+
+        function startFrogJump() {
+            document.getElementById('frog-start-btn').disabled = true;
+            
+            frogInterval = setInterval(() => {
+                if (frogCurrentPos >= frogDivisor) {
+                    frogCurrentPos -= frogDivisor;
+                    frogJumpCount++;
+                    document.getElementById('frog-jump-count').innerText = frogJumpCount;
+                    updateFrogPosition();
+                } else {
+                    clearInterval(frogInterval);
+                    document.getElementById('frog-result-msg').innerText = 
+                        `Мэлхий ${frogDivisor}-аар ${frogJumpCount} удаа ухраж үсэрч 0 дээр очлоо! Иймээс ${frogDividend} ÷ ${frogDivisor} = ${frogJumpCount}`;
+                }
+            }, 800);
+        }
+
+        function resetFrog() {
+            setupFrog(frogDividend, frogDivisor);
+        }
+
+        // ================= TAB 4: GAME QUIZ LOGIC =================
+        const questionsList = [
+            { a: 6, b: 2, answer: 3 },
+            { a: 8, b: 2, answer: 4 },
+            { a: 10, b: 2, answer: 5 },
+            { a: 12, b: 3, answer: 4 },
+            { a: 15, b: 3, answer: 5 },
+            { a: 9, b: 3, answer: 3 },
+            { a: 16, b: 4, answer: 4 },
+            { a: 20, b: 5, answer: 4 },
+            { a: 18, b: 2, answer: 9 },
+            { a: 14, b: 2, answer: 7 }
+        ];
+
+        function generateQuestion() {
+            document.getElementById('quiz-box').classList.remove('hidden');
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('quiz-feedback').classList.remove('flex');
+
+            const randIndex = Math.floor(Math.random() * questionsList.length);
+            currentQuestion = questionsList[randIndex];
+
+            document.getElementById('quiz-question').innerText = `${currentQuestion.a} ÷ ${currentQuestion.b} = ?`;
+
+            // Options setup
+            const correctAnswer = currentQuestion.answer;
+            const options = new Set([correctAnswer]);
+
+            while (options.size < 4) {
+                let wrong = correctAnswer + (Math.floor(Math.random() * 5) - 2);
+                if (wrong > 0 && wrong !== correctAnswer) {
+                    options.add(wrong);
+                }
+            }
+
+            const shuffledOptions = Array.from(options).sort(() => Math.random() - 0.5);
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "btn-press py-4 bg-[#0b132b] hover:bg-indigo-600/30 text-white font-extrabold text-2xl rounded-2xl border border-[#3a506b]/50 shadow-md transition-all";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedOpt) {
+            document.getElementById('quiz-box').classList.add('hidden');
+            const feedbackEl = document.getElementById('quiz-feedback');
+            feedbackEl.classList.remove('hidden');
+            feedbackEl.classList.add('flex');
+
+            if (selectedOpt === currentQuestion.answer) {
+                score += 10;
+                document.getElementById('game-score').innerText = score;
+                document.getElementById('feedback-icon').innerText = '🎉';
+                document.getElementById('feedback-title').innerText = 'Маш сайн!';
+                document.getElementById('feedback-desc').innerText = 'Та зөв хариуллаа. +10 оноо!';
+                
+                // Trigger Confetti
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
+            } else {
+                document.getElementById('feedback-icon').innerText = '💡';
+                document.getElementById('feedback-title').innerText = 'Дахин оролдоорой!';
+                document.getElementById('feedback-desc').innerText = `Зөв хариулт нь ${currentQuestion.answer} байлаа.`;
+            }
+        }
+
+        function nextQuestion() {
+            generateQuestion();
+        }
+
+        // Initialize App on load
+        window.onload = function() {
+            renderVisualizer();
+        };
+    </script>
+</body>
+</html>
